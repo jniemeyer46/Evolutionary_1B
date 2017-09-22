@@ -4,7 +4,8 @@ Direct any grading questions to John Liming at jrl2n4@mst.edu
 
 
 In order to run the program correctly please use the following syntax:
-	./run.sh <config_file> <problem_file> <algorithm_type> <random_seed>
+	./run.sh config_file problem_file algorithm_type random_seed
+<>
 
 	* Uses the Random Search algorithm with a new seed value
 		./run.sh config1.txt problem1.txt Random newSeed
