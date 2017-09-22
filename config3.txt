@@ -1,0 +1,8 @@
+Random Search
+fitness_evaluations 1000
+runs 30
+prob_log logs/prob3_log.txt
+prob_solution solutions/prob3_solution.txt
+seed time.time()
+
+EA
