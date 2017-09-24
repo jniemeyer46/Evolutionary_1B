@@ -17,6 +17,9 @@ class Container:
 	offspring = []
 	offspring_fitness = []
 
+	average_fitness_holder = []
+	best_fitness_holder = []
+
 	# Holds the highest solution fitness this run and the locations of the solution shapes
 	solution_fitness = 0
 	solution_locations = []

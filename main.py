@@ -236,10 +236,14 @@ def main():
 		for run in range(1, int(container.numRuns) + 1):
 			# highest fitness calculation thus far this run
 			highest_fitness = 0
+			best_run_fitness = 0
+			average_run_fitness = 0
 
 			# clear the population for the next run
 			container.population_locations.clear()
 			container.population_fitness_values.clear()
+			container.best_fitness_holder.clear()
+			container.average_fitness_holder.clear()
 
 			# Titles each section with Run i, where i is the run number (1-30)
 			result_log.write("Run " + str(run) + "\n")
@@ -314,8 +318,7 @@ def main():
 			average_fitness = average_fitness / int(container.populationSize)
 
 
-			result_log.write(container.populationSize + "	 " + str(average_fitness) + "	" + str(best_fitness) + "\n")
-
+			result_log.write(container.populationSize + "	 " + str(round(average_fitness)) + "	" + str(best_fitness) + "\n")
 
 			'''------START OF THE EA------'''
 			for fitness in range(1, int(container.evaluations) + 1):
@@ -454,27 +457,51 @@ def main():
 
 
 				'''------Result Log Formatting Evaluations------'''
-				best_fitness = 0
 				average_fitness = 0
-
 				for i in container.offspring_fitness:
-					if int(i) > best_fitness:
-						best_fitness = int(i)
+					if int(i) > best_run_fitness:
+						best_run_fitness = int(i)
+
+				container.best_fitness_holder.append(best_run_fitness)
 
 				for i in container.offspring_fitness:
 					average_fitness += int(i)
 				average_fitness = average_fitness / int(container.kOffspring) 
 
-				result_log.write(str(fitness) + "	" + str(average_fitness) + "	" + str(best_fitness) + "\n")
+				container.average_fitness_holder.append(round(average_fitness))
+
+				for i in container.average_fitness_holder:
+					average_run_fitness += i
+				average_run_fitness = average_run_fitness / len(container.average_fitness_holder)
+
+				result_log.write(str(fitness) + "	" + str(round(average_run_fitness)) + "	" + str(best_run_fitness) + "\n")
 
 
 				'''------Termination------'''
 				if container.numEvals == 1 and int(container.numEvalsTerminate) == fitness:
 					break
 				elif container.avgPopFitness == 1:
-					pass
+					count = 0
+					end = False
+
+					for num in container.average_fitness_holder:
+						if count >= int(container.n) - 1:
+							end = True
+						elif int(num) == int(round(average_run_fitness)):
+							count += 1
+					if end:
+						break
 				elif container.bestPopFitness == 1:
-					pass
+					count = 0
+					end = False
+
+					for num in container.best_fitness_holder:
+						if count >= int(container.n) - 1:
+							end = True
+						elif num == best_run_fitness:
+							count += 1					
+					if end:
+						break
 
 
 			# formatting the result log with a space after each run block
