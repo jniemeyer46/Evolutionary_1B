@@ -66,6 +66,39 @@ def createParentTourney(locations, fitness_values, kParent):
 	return Tourney_participants, Tourney_participants_fitness_values
 
 
+def offspringTournament(locations, fitness_values, kOffspring):
+	offspring = []
+	offspring_fitness = []
+
+	for num in range(0, int(kOffspring)):
+		highest_index = 0
+
+		tournament_pool, tournament_fitness_pool = deepcopy(createParentTourney(locations, fitness_values, kOffspring))
+
+		for index in range(0, len(tournament_fitness_pool)):
+			if tournament_fitness_pool[index] > tournament_fitness_pool[highest_index]:
+				highest_index = index
+
+		offspring.append(locations[highest_index])
+		del locations[highest_index]
+		offspring_fitness.append(fitness_values[highest_index])
+		del locations[highest_index]
+
+	return offspring, offspring_fitness
+
+
+def createOffspringTourney(locations, fitness_values, kOffspring):
+	Tourney_participants = []
+	Tourney_participants_fitness_values = []
+
+	for i in range(0, int(kOffspring)):
+		rand_location = random.randrange(0, len(locations))
+		Tourney_participants.append(locations[rand_location])
+		Tourney_participants_fitness_values.append(fitness_values[rand_location])
+
+	return Tourney_participants, Tourney_participants_fitness_values
+
+
 
 
 

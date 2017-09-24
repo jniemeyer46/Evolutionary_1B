@@ -26,6 +26,6 @@ Initialization: Uniform_Random: 1
 
 Parent_Selection: Fitness_Proportional_Selection: 0, k-Tournament_Selection_with_replacement: 1
 
-Survival_Selection: Truncation: 1, k-Tournament_Selection_without_replacement: 0
+Survival_Selection: Truncation: 0, k-Tournament_Selection_without_replacement: 1
 
 Termination: Number_of_evals: 0, no_change_in_average_population_fitness_for_n_generations: 0, no_change_in_best_fitness_in_population_for_n_generations: 1

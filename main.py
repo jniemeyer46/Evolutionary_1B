@@ -128,7 +128,7 @@ def main():
 				# if it is, writes it to the log file
 				if highest_fitness < current_fitness:
 					highest_fitness = current_fitness
-					result_log.write(str(fitness + 1 ) + "	" + str(current_fitness) + "\n")
+					result_log.write(str(fitness) + "	" + str(current_fitness) + "\n")
 
 				# If the current solution is the best, replace the current solution with the new solution
 				if container.solution_fitness < current_fitness:
@@ -240,12 +240,9 @@ def main():
 			# clear the population for the next run
 			container.population_locations.clear()
 			container.population_fitness_values.clear()
-			container.recombined_offspring.clear()
-			container.mutated_offspring.clear()
-			container.mutated_offspring_fitness.clear()
 
 			# Titles each section with Run i, where i is the run number (1-30)
-			result_log.write("Run " + str(run) + "\n")
+			result_log.write("Run " + str(run) + "\n\n")
 
 			
 			'''------INITIALIZATION------'''
@@ -304,157 +301,196 @@ def main():
 				container.population_fitness_values.append(current_fitness)
 
 
-			'''------Parent Selection------'''
-			# if the user wants fitness proportional selection
-			if container.fitnessSelection == 1:
-				container.parents = deepcopy(selections.fitnessSelection(container.population_locations, container.population_fitness_values, container.kParent))
-			# if the user wants tournament selection
-			elif container.parentTournament == 1:
-				container.parents = deepcopy(selections.parentTournament(container.population_locations, container.population_fitness_values, container.kParent))
-			# if the user didnt set their parent selector
-			else:
-				print("You did not select a parent selection method in the configuration file")
+			'''------OBTAINING FIRST RESULT LOG ROW RESULTS------'''
+			best_fitness = 0
+			average_fitness = 0
+
+			for i in container.population_fitness_values:
+				if int(i) > best_fitness:
+					best_fitness = int(i)
+
+			for i in container.population_fitness_values:
+				average_fitness += int(i)
+			average_fitness = average_fitness / int(container.populationSize)
 
 
-			'''------Recombination------'''
-			for index in range(0, int(container.offspringSize)):
-				# holds the valid recombined offspring offspring
-				recombined_offspring = []
+			result_log.write(container.populationSize + "	 " + str(average_fitness) + "	" + str(best_fitness) + "\n")
 
-				# obtain the two parents for recombination
-				parent1 = random.randrange(0, len(container.parents))
-				parent2 = random.randrange(0, len(container.parents))
 
-				# determine the amout of genes used from parent 1... the rest form parent 2
-				amount_parent1_genes = random.randrange(0, len(container.shapes))
+			'''------START OF THE EA------'''
+			for fitness in range(1, int(container.evaluations) + 1):
 
-				parent1_genes = deepcopy(container.parents[parent1][0:amount_parent1_genes])
-				parent2_genes = deepcopy(container.parents[parent2][amount_parent1_genes: len(container.shapes)])
+				# clear the population for the next run
+				container.recombined_offspring.clear()
+				container.mutated_offspring.clear()
+				container.mutated_offspring_fitness.clear()
+				container.offspring.clear()
+				container.offspring_fitness.clear()
 
-				test_offspring = parent1_genes + parent2_genes
+				'''------Parent Selection------'''
+				# if the user wants fitness proportional selection
+				if container.fitnessSelection == 1:
+					container.parents = deepcopy(selections.fitnessSelection(container.population_locations, container.population_fitness_values, container.kParent))
+				# if the user wants tournament selection
+				elif container.parentTournament == 1:
+					container.parents = deepcopy(selections.parentTournament(container.population_locations, container.population_fitness_values, container.kParent))
+				# if the user didnt set their parent selector
+				else:
+					print("You did not select a parent selection method in the configuration file")
 
-				# for every shape in the file, choose a position
-				for index in range(0, len(test_offspring)):
-					valid = False
 
+				'''------Recombination------and------Mutation------'''
+				for index in range(0, int(container.offspringSize)):
+					# holds the valid recombined offspring offspring
+					recombined_offspring = []
+
+					# obtain the two parents for recombination
+					parent1 = random.randrange(0, len(container.parents))
+					parent2 = random.randrange(0, len(container.parents))
+
+					# determine the amout of genes used from parent 1... the rest form parent 2
+					amount_parent1_genes = random.randrange(0, len(container.shapes))
+
+					parent1_genes = deepcopy(container.parents[parent1][0:amount_parent1_genes])
+					parent2_genes = deepcopy(container.parents[parent2][amount_parent1_genes: len(container.shapes)])
+
+					test_offspring = parent1_genes + parent2_genes
+
+					# for every shape in the file, choose a position
+					for index in range(0, len(test_offspring)):
+						valid = False
+
+
+						# the material sheet being used to cut out shapes
+						container.materialSheet = [[0 for x in range(0, int(container.maxWidth))] for y in range(0, int(container.maxLength))]
+
+						x_cord, y_cord, rotation = test_offspring[index]
+
+
+						if rotation != 0:
+							shape = rotate.rotate_shape(rotation, container.shapes[index])
+						elif rotation == 0:
+							shape = container.shapes[index]
+
+						valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
+
+						# Keep obtaining a new position until it fits on the material
+						while not valid:
+							# generate random position and rotation
+							x_cord = random.randrange(0, int(container.maxLength))
+							y_cord = random.randrange(0, int(container.maxWidth))
+							rotation = random.randrange(0,4)
+
+							# Rotate the shape if needed
+							if rotation != 0:
+								shape = rotate.rotate_shape(rotation, container.shapes[index])
+							elif rotation == 0:
+								shape = container.shapes[index]
+
+							# Check whether the shape fits on the material in the current position
+							valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
+								
+						# store the location in a tuple if it worked
+						placementLocation = (x_cord, y_cord, rotation)
+
+						# Create the true offspring
+						recombined_offspring.append(placementLocation)
+
+					container.recombined_offspring.append(recombined_offspring)
+
+
+				'''------Mutation------'''
+				for offspring in container.recombined_offspring:
+					# holders for length of material used
+					LargestX = 0
+					SmallestX = 156
+
+					mutated_offspring = []
 
 					# the material sheet being used to cut out shapes
 					container.materialSheet = [[0 for x in range(0, int(container.maxWidth))] for y in range(0, int(container.maxLength))]
 
-					x_cord, y_cord, rotation = test_offspring[index]
+					for index in range(0, len(offspring)):
+						valid = False
+
+						x_cord, y_cord, rotation = offspring[index]
 
 
-					if rotation != 0:
-						shape = rotate.rotate_shape(rotation, container.shapes[index])
-					elif rotation == 0:
-						shape = container.shapes[index]
-
-					valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
-
-					# Keep obtaining a new position until it fits on the material
-					while not valid:
-						# generate random position and rotation
-						x_cord = random.randrange(0, int(container.maxLength))
-						y_cord = random.randrange(0, int(container.maxWidth))
-						rotation = random.randrange(0,4)
-
-						# Rotate the shape if needed
 						if rotation != 0:
 							shape = rotate.rotate_shape(rotation, container.shapes[index])
 						elif rotation == 0:
 							shape = container.shapes[index]
 
-						# Check whether the shape fits on the material in the current position
 						valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
-							
 
-					shapeManipulation.placeShape(container.materialSheet, x_cord, y_cord, shape)
-					# store the location in a tuple if it worked
-					placementLocation = (x_cord, y_cord, rotation)
+						# Keep obtaining a new position until it fits on the material
+						while not valid:
+							# generate random position and rotation
+							x_cord = random.randrange(0, int(container.maxLength))
+							y_cord = random.randrange(0, int(container.maxWidth))
+							rotation = random.randrange(0,4)
 
-					# Create the true offspring
-					recombined_offspring.append(placementLocation)
+							# Rotate the shape if needed
+							if rotation != 0:
+								shape = rotate.rotate_shape(rotation, container.shapes[index])
+							elif rotation == 0:
+								shape = container.shapes[index]
 
-				container.recombined_offspring.append(recombined_offspring)
+							# Check whether the shape fits on the material in the current position
+							valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
+								
 
+						shapeManipulation.placeShape(container.materialSheet, x_cord, y_cord, shape)
+						# store the location in a tuple if it worked
+						placementLocation = (x_cord, y_cord, rotation)
 
-			'''------Mutation------'''
-			for offspring in container.recombined_offspring:
-				# holders for length of material used
-				LargestX = 0
-				SmallestX = 156
+						# Create the true offspring
+						mutated_offspring.append(placementLocation)
 
-				mutated_offspring = []
+					container.mutated_offspring.append(recombined_offspring)
 
-				# the material sheet being used to cut out shapes
-				container.materialSheet = [[0 for x in range(0, int(container.maxWidth))] for y in range(0, int(container.maxLength))]
+					# obtains the smallest and largest position in the material array
+					for i in range(len(container.materialSheet)):
+						if 1 in container.materialSheet[i]:
+							if i < SmallestX:
+								SmallestX = i
+							elif i > LargestX:
+								LargestX = i
 
-				for index in range(0, len(offspring)):
-					valid = False
+					# Determines the Length of the material used by this iteration
+					usedLength = ((LargestX - SmallestX) + 1)
+					current_fitness = fitnessCalc(container.maxLength, usedLength)
 
-					x_cord, y_cord, rotation = offspring[index]
+					# Make a list of fitness values associated with each person in the population
+					container.mutated_offspring_fitness.append(current_fitness)
+		
 
-
-					if rotation != 0:
-						shape = rotate.rotate_shape(rotation, container.shapes[index])
-					elif rotation == 0:
-						shape = container.shapes[index]
-
-					valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
-
-					# Keep obtaining a new position until it fits on the material
-					while not valid:
-						# generate random position and rotation
-						x_cord = random.randrange(0, int(container.maxLength))
-						y_cord = random.randrange(0, int(container.maxWidth))
-						rotation = random.randrange(0,4)
-
-						# Rotate the shape if needed
-						if rotation != 0:
-							shape = rotate.rotate_shape(rotation, container.shapes[index])
-						elif rotation == 0:
-							shape = container.shapes[index]
-
-						# Check whether the shape fits on the material in the current position
-						valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
-							
-
-					shapeManipulation.placeShape(container.materialSheet, x_cord, y_cord, shape)
-					# store the location in a tuple if it worked
-					placementLocation = (x_cord, y_cord, rotation)
-
-					# Create the true offspring
-					mutated_offspring.append(placementLocation)
-
-				container.mutated_offspring.append(recombined_offspring)
-
-				# obtains the smallest and largest position in the material array
-				for i in range(len(container.materialSheet)):
-					if 1 in container.materialSheet[i]:
-						if i < SmallestX:
-							SmallestX = i
-						elif i > LargestX:
-							LargestX = i
-
-				# Determines the Length of the material used by this iteration
-				usedLength = ((LargestX - SmallestX) + 1)
-				current_fitness = fitnessCalc(container.maxLength, usedLength)
-
-				# Make a list of fitness values associated with each person in the population
-				container.mutated_offspring_fitness.append(current_fitness)
-	
-
-			'''------Survival Selection------'''
-			if container.truncation == 1:
-				container.mutated_offspring = deepcopy(container.mutated_offspring[0: int(container.kOffspring)])
-				container.mutated_offspring_fitness = deepcopy(container.mutated_offspring_fitness[0: int(container.kOffspring)])
-				print(container.mutated_offspring)
-				print(container.mutated_offspring_fitness)
-			elif container.offspringTournament == 1:
-				pass
+				'''------Survival Selection------'''
+				if container.truncation == 1:
+					container.offspring = deepcopy(container.mutated_offspring[0: int(container.kOffspring)])
+					container.offspring_fitness = deepcopy(container.mutated_offspring_fitness[0: int(container.kOffspring)])
+				elif container.offspringTournament == 1:				
+					container.offspring, container.offspring_fitness = deepcopy(selections.offspringTournament(container.mutated_offspring, container.mutated_offspring_fitness, container.kOffspring))
 
 
-			'''------Termination------'''
+				'''------Result Log Formatting Evaluations------'''
+				best_fitness = 0
+				average_fitness = 0
+
+				for i in container.offspring_fitness:
+					if int(i) > best_fitness:
+						best_fitness = int(i)
+
+				print(best_fitness)
+
+				for i in container.offspring_fitness:
+					average_fitness += int(i)
+				average_fitness = average_fitness / int(container.kOffspring) 
+
+				result_log.write(str(fitness) + "	" + str(average_fitness) + "	" + str(best_fitness) + "\n")
+
+
+				'''------Termination------'''
 
 
 			# formatting the result log with a space after each run block
