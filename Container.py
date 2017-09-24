@@ -12,7 +12,6 @@ class Container:
 	population_locations = []
 	population_fitness_values = []
 	parents = []
-	recombined_offspring = []
 	mutated_offspring = []
 	mutated_offspring_fitness = []
 	offspring = []

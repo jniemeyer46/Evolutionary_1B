@@ -15,7 +15,7 @@ runs: 30
 mutation_rate: 0.1
 fitness_evaluations: 100
 prob_log: logs/prob1_EA_log.txt
-number_of_evals_till_termination: 100
+number_of_evals_till_termination: 10
 tournament_size_for_parent_selection: 20
 tournament_size_for_survival_selection: 10
 n_for_termination_convergence_criterion: 50
@@ -28,4 +28,4 @@ Parent_Selection: Fitness_Proportional_Selection: 0, k-Tournament_Selection_with
 
 Survival_Selection: Truncation: 0, k-Tournament_Selection_without_replacement: 1
 
-Termination: Number_of_evals: 0, no_change_in_average_population_fitness_for_n_generations: 0, no_change_in_best_fitness_in_population_for_n_generations: 1
+Termination: Number_of_evals: 1, no_change_in_average_population_fitness_for_n_generations: 0, no_change_in_best_fitness_in_population_for_n_generations: 0
