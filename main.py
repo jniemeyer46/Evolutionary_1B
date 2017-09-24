@@ -31,7 +31,7 @@ def main():
 	if sys.argv[3] == "Random":
 		# makes sure only the config settings for the Random Search are used
 		config = config[0:8]
-
+		
 		# setting up variables using config file
 		for rules in config:
 			info = rules.split(" ")
@@ -46,7 +46,7 @@ def main():
 			elif info[0] == "seed:" and sys.argv[4] == "newSeed":
 				container.seed = eval(info[1])
 			elif info[0] == "seed:" and sys.argv[4] == "lastSeed":
-				obtain_seed = open(container.prob_log_file).read().splitlines(3)
+				obtain_seed = open(container.prob_log_file).read().splitlines()
 				for lines in obtain_seed:
 					line = lines.split(" ")
 					if line[0] == "Random":
@@ -298,6 +298,9 @@ def main():
 
 				# Make a list of fitness values associated with each person in the population
 				container.population_fitness_values.append(current_fitness)
+
+
+			'''------ ------'''
 
 			# formatting the result log with a space after each run block
 			result_log.write("\n")
