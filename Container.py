@@ -12,7 +12,11 @@ class Container:
 	population_locations = []
 	population_fitness_values = []
 	parents = []
+	recombined_offspring = []
+	mutated_offspring = []
+	mutated_offspring_fitness = []
 	offspring = []
+	offspring_fitness = []
 
 	# Holds the highest solution fitness this run and the locations of the solution shapes
 	solution_fitness = 0
@@ -35,7 +39,7 @@ class Container:
 	numRuns = 0
 	evaluations = 0
 	populationSize = 0
-	recombinationPool = 0
+	offspringSize = 0
 	mutationRate = 0
 	numEvalsTerminate = 0
 	kParent = 0
