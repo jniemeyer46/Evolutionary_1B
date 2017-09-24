@@ -13,7 +13,7 @@ prob_solution: solutions/prob3_random_solution.txt
 λ: 75
 runs: 30
 mutation_rate: 0.1
-fitness_evaluations: 100
+fitness_evaluations: 10000
 prob_log: logs/prob3_EA_log.txt
 number_of_evals_till_termination: 100
 tournament_size_for_parent_selection: 10
