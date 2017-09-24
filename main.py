@@ -186,7 +186,7 @@ def main():
 			elif info[0] == "tournament_size_for_parent_selection:":
 				container.kParent = info[1]
 			elif info[0] == "tournament_size_for_survival_selection:":
-				container.kOffSpring = info[1]
+				container.kOffspring = info[1]
 			elif info[0] == "n_for_termination_convergence_criterion:":
 				container.n = info[1]
 			elif info[0] == "prob_solution:":
@@ -305,7 +305,10 @@ def main():
 			if container.fitnessSelection == 1:
 				container.parents = deepcopy(selections.fitnessSelection(container.population_locations, container.population_fitness_values, container.kParent))
 			elif container.parentTournament == 1:
-				pass
+				container.parents = deepcopy(selections.parentTournament(container.population_locations, container.population_fitness_values, container.kParent))
+				print(container.parents)
+			else:
+				print("You did not select a parent selection method in the configuration file")
 
 
 			'''------Survival Selection------'''

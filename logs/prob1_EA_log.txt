@@ -1,8 +1,8 @@
 Result Log 
 Problem Instance Path = ../problem1.txt 
-Random Seed = 1506213609.739168 
+Random Seed = 1506255159.2652678 
 Initialization = {'Uniform_Random': 1 }
-Parent_Selection = {'Fitness_Proportional_Selection': 1,'k-Tournament_Selection_with_replacement': 0}
+Parent_Selection = {'Fitness_Proportional_Selection': 0,'k-Tournament_Selection_with_replacement': 1}
 Survival_Selection = {'Truncation': 0, 'k-Tournament_Selection_without_replacement': 1}
 Termination = {'Number_of_evals': 0, 'no_change_in_average_population_fitness_for_n_generations': 0, 'no_change_in_best_fitness_in_population_for_n_generations': 1}
 Parameters used = {'fitness evaluations': 100, 'number of runs': 30, 'problem solution location': 'solutions/prob1_EA_solution.txt', 'mutation_rate': 0.1, 'μ': 150, 'λ': 75}
@@ -26,44 +26,3 @@ Run 8
 Run 9
 
 Run 10
-
-Run 11
-
-Run 12
-
-Run 13
-
-Run 14
-
-Run 15
-
-Run 16
-
-Run 17
-
-Run 18
-
-Run 19
-
-Run 20
-
-Run 21
-
-Run 22
-
-Run 23
-
-Run 24
-
-Run 25
-
-Run 26
-
-Run 27
-
-Run 28
-
-Run 29
-
-Run 30
-

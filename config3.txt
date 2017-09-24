@@ -12,7 +12,6 @@ prob_solution: solutions/prob3_random_solution.txt
 μ: 150
 λ: 75
 runs: 30
-seed: time.time()
 mutation_rate: 0.1
 fitness_evaluations: 100
 prob_log: logs/prob3_EA_log.txt
@@ -21,6 +20,7 @@ tournament_size_for_parent_selection: 10
 tournament_size_for_survival_selection: 10
 n_for_termination_convergence_criterion: 50
 prob_solution: solutions/prob3_EA_solution.txt
+seed: time.time()
 
 Initialization: Uniform_Random: 1
 
