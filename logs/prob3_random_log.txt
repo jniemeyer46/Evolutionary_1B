@@ -1,0 +1,28 @@
+Result Log 
+Problem Instance Path = ../problem3.txt 
+Random Seed = 1506169015.228621 
+Parameters used = {'fitness evaluations': 1000, 'number of runs': 30, 'problem solution location': 'solutions/prob3_random_solution.txt'}
+
+Run 1
+2	9
+3	11
+7	15
+10	19
+20	33
+218	38
+469	39
+
+Run 2
+2	9
+3	10
+6	19
+8	24
+50	25
+72	29
+82	30
+136	38
+583	50
+
+Run 3
+2	10
+3	37

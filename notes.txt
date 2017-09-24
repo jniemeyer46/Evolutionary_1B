@@ -1,10 +1,2 @@
-* Fix all problems mentions with your first assignment
-	include type of algorithm used in the config file (random search, EA, etc.)
-	Do not include the fitness calculation in the solution file
-		* figure out how to do this with my current setup, or change my setup
-
-* Maybe try setting up a class to hold all of the information needed for this assignment thus far, makes it easier to save the current solution
-
-* Maybe try setting up classes specifically for the config files and just import them all.  Obtain the config file wanted from the command line and use it.  May not be the most efficient, but it would work fairly well I think
-
-* Make sure you read all of the requirements before saying your done this time.
+μ = initial population size
+λ = recombination pool size
