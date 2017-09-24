@@ -2,7 +2,7 @@ Result Log
 Problem Instance Path = ../problem1.txt 
 Random Seed = 1506213609.739168 
 Initialization = {'Uniform_Random': 1 }
-Parent_Selection = {'Fitness_Proportional_Selection': 0,'k-Tournament_Selection_with_replacement': 1}
+Parent_Selection = {'Fitness_Proportional_Selection': 1,'k-Tournament_Selection_with_replacement': 0}
 Survival_Selection = {'Truncation': 0, 'k-Tournament_Selection_without_replacement': 1}
 Termination = {'Number_of_evals': 0, 'no_change_in_average_population_fitness_for_n_generations': 0, 'no_change_in_best_fitness_in_population_for_n_generations': 1}
 Parameters used = {'fitness evaluations': 100, 'number of runs': 30, 'problem solution location': 'solutions/prob1_EA_solution.txt', 'mutation_rate': 0.1, 'μ': 150, 'λ': 75}

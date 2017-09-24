@@ -11,6 +11,7 @@ class Container:
 	materialSheet = []
 	population_locations = []
 	population_fitness_values = []
+	parents = []
 
 	# Holds the highest solution fitness this run and the locations of the solution shapes
 	solution_fitness = 0

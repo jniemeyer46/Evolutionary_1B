@@ -12,7 +12,6 @@ seed: time.time()
 μ: 150
 λ: 75
 runs: 30
-seed: time.time()
 mutation_rate: 0.1
 fitness_evaluations: 100
 prob_log: logs/prob1_EA_log.txt
@@ -21,10 +20,11 @@ tournament_size_for_parent_selection: 10
 tournament_size_for_survival_selection: 10
 n_for_termination_convergence_criterion: 50
 prob_solution: solutions/prob1_EA_solution.txt
+seed: time.time()
 
 Initialization: Uniform_Random: 1
 
-Parent_Selection: Fitness_Proportional_Selection: 0, k-Tournament_Selection_with_replacement: 1
+Parent_Selection: Fitness_Proportional_Selection: 1, k-Tournament_Selection_with_replacement: 0
 
 Survival_Selection: Truncation: 0, k-Tournament_Selection_without_replacement: 1
 

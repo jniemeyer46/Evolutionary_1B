@@ -7,6 +7,7 @@ import time
 import Length
 import rotate
 import shapeManipulation
+import selections
 
 
 def main():
@@ -31,7 +32,7 @@ def main():
 	if sys.argv[3] == "Random":
 		# makes sure only the config settings for the Random Search are used
 		config = config[0:8]
-		
+
 		# setting up variables using config file
 		for rules in config:
 			info = rules.split(" ")
@@ -195,21 +196,21 @@ def main():
 					# sets flag for uniform random
 					container.uniformRandom = 1
 			elif info[0] == "Parent_Selection:":
-				if info[1] == "Fitness_Proportional_Selection:" and info[2] == '1':
+				if info[1] == "Fitness_Proportional_Selection:" and info[2] == '1,':
 					# sets flag for fitness selection
 					container.fitnessSelection = 1
 				elif info[3] == "k-Tournament_Selection_with_replacement:" and info[4] == '1':
 					# sets flag for parent tournament
 					container.parentTournament = 1
 			elif info[0] == "Survival_Selection:":
-				if info[1] == "Truncation:" and info[2] == '1':
+				if info[1] == "Truncation:" and info[2] == '1,':
 					container.truncation = 1
 				elif info[3] == "k-Tournament_Selection_without_replacement:" and info[4] == '1':
 					container.offspringTournament = 1
 			elif info[0] == "Termination:":
-				if info[1] == "Number_of_evals:" and info[2] == '1':
+				if info[1] == "Number_of_evals:" and info[2] == '1,':
 					container.numEvals = 1
-				elif info[3] == "no_change_in_average_population_fitness_for_n_generations:" and info[4] == '1':
+				elif info[3] == "no_change_in_average_population_fitness_for_n_generations:" and info[4] == '1,':
 					# sets flag for parent tournament
 					container.avgPopFitness = 1
 				elif info[5] == "no_change_in_best_fitness_in_population_for_n_generations:" and info[6] == '1':
@@ -300,7 +301,18 @@ def main():
 				container.population_fitness_values.append(current_fitness)
 
 
-			'''------ ------'''
+			'''------Parent Selection------'''
+			if container.fitnessSelection == 1:
+				container.parents = deepcopy(selections.fitnessSelection(container.population_locations, container.population_fitness_values, container.kParent))
+			elif container.parentTournament == 1:
+				pass
+
+
+			'''------Survival Selection------'''
+
+
+			'''------Termination------'''
+
 
 			# formatting the result log with a space after each run block
 			result_log.write("\n")
