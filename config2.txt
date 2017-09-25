@@ -9,8 +9,8 @@ prob_solution: solutions/prob2_random_solution.txt
 
 ::::EA::::
 
-μ: 150
-λ: 75
+mu: 150
+lambda: 75
 runs: 30
 mutation_rate: 0.1
 fitness_evaluations: 10000

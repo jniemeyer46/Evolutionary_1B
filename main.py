@@ -160,9 +160,9 @@ def main():
 			# split the rules into words
 			info = rules.split(" ")
 
-			if info[0] == "μ:":
+			if info[0] == "mu:":
 				container.populationSize = info[1]
-			elif info[0] == "λ:":
+			elif info[0] == "lambda:":
 				container.offspringSize = info[1]
 			elif info[0] == "runs:":
 				container.numRuns = info[1]
@@ -230,7 +230,7 @@ def main():
 		result_log.write("Parent_Selection = {'Fitness_Proportional_Selection': %s,'k-Tournament_Selection_with_replacement': %s}\n" % (container.fitnessSelection, container.parentTournament))
 		result_log.write("Survival_Selection = {'Truncation': %s, 'k-Tournament_Selection_without_replacement': %s}\n" % (container.truncation, container.offspringTournament))
 		result_log.write("Termination = {'Number_of_evals': %s, 'no_change_in_average_population_fitness_for_n_generations': %s, 'no_change_in_best_fitness_in_population_for_n_generations': %s}\n" % (container.numEvals, container.avgPopFitness, container.bestPopFitness))
-		result_log.write("Parameters used = {'fitness evaluations': %s, 'number of runs': %s, 'problem solution location': '%s', 'mutation_rate': %s, 'μ': %s, 'λ': %s}\n\n" % (container.evaluations, container.numRuns, container.prob_solution_file, container.mutationRate, container.populationSize, container.offspringSize))
+		result_log.write("Parameters used = {'fitness evaluations': %s, 'number of runs': %s, 'problem solution location': '%s', 'mutation_rate': %s, 'mu': %s, 'lambda': %s}\n\n" % (container.evaluations, container.numRuns, container.prob_solution_file, container.mutationRate, container.populationSize, container.offspringSize))
 
 		# runs through the program as many times as the config files says to
 		for run in range(1, int(container.numRuns) + 1):
