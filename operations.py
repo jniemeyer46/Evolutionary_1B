@@ -210,7 +210,6 @@ def fitnessCalc(maxLength, usedLength):
 
 def recombination(sheet, maxL, maxW, shapes, test_offspring, index):
 	recombination_valid = False
-	total_penalty = 0
 	x_cord, y_cord, rotation = test_offspring[int(index)]
 
 	if rotation != 0:
@@ -241,7 +240,6 @@ def recombination(sheet, maxL, maxW, shapes, test_offspring, index):
 
 def mutation(sheet, maxL, maxW, shape):
 	mutation_valid = False
-	total_penalty = 0
 	# Keep obtaining a new position until it fits on the material
 	while not mutation_valid:
 		# generate random position and rotation
