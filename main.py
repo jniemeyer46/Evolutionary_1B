@@ -4,11 +4,9 @@ import sys
 import string
 import random
 import time
-import Length
-import rotate
-import shapeManipulation
 import selections
-
+import operations
+import config_setup
 
 def main():
 	container = Container()
@@ -21,50 +19,28 @@ def main():
 
 	# Variables that will be used to set the 2d array of material
 	container.maxWidth = container.shapes[0].split(" ")[0]
-	container.maxLength = Length.getLength(container.shapes)
+	container.maxLength = operations.getLength(container.shapes)
 	#number of shapes in the problem file
 	container.numShapes = container.shapes[0].split(" ")[1]
 
 	# delete the width and number of shapes from the shape list
 	del container.shapes[0]
 
-	# User wants the Random Search run
-	if sys.argv[3] == "Random":
-		# makes sure only the config settings for the Random Search are used
-		config = config[0:8]
+	config_setup.setup(container, config)
 
-		# setting up variables using config file
-		for rules in config:
-			info = rules.split(" ")
-			if info[0] == "fitness_evaluations:":
-				container.evaluations = info[1]
-			elif info[0] == "runs:":
-				container.numRuns = info[1]
-			elif info[0] == "prob_log:":
-				container.prob_log_file = info[1]
-			elif info[0] == "prob_solution:":
-				container.prob_solution_file = info[1]
-			elif info[0] == "seed:" and sys.argv[4] == "newSeed":
-				container.seed = eval(info[1])
-			elif info[0] == "seed:" and sys.argv[4] == "lastSeed":
-				obtain_seed = open(container.prob_log_file).read().splitlines()
-				for lines in obtain_seed:
-					line = lines.split(" ")
-					if line[0] == "Random":
-						container.seed = line[3]
-						break
-
+	# Config file says use Random Search
+	if config[0] == 'Random = 1':
 		# Seeds the random function using a saved value that is put into the log file
 		random.seed(container.seed)
 
 		# opening the log file 
-		result_log = open(container.prob_log_file, 'w')
+		result_log = open(container.prob_log_file_random, 'w')
 		# formatting the result log with Result Log at the top
 		result_log.write("Result Log \n")
 		result_log.write("Problem Instance Path = ../%s \n" % sys.argv[2])
 		result_log.write("Random Seed = %s \n" % container.seed)
 		result_log.write("Parameters used = {'fitness evaluations': %s, 'number of runs': %s, 'problem solution location': '%s'}\n\n"
-						% (container.evaluations, container.numRuns, container.prob_solution_file))
+						% (container.evaluations, container.numRuns, container.prob_solution_file_random))
 
 		# runs through the program as many times as the config files says to
 		for run in range(1, int(container.numRuns) + 1):
@@ -73,12 +49,13 @@ def main():
 
 			# Titles each section with Run i, where i is the run number (1-30)
 			result_log.write("Run " + str(run) + "\n")
+			print("Run " + str(run) + "\n")
 
 			# run through the given amount of times given by fitness evaluation
 			for fitness in range(1, int(container.evaluations)+1):
 				# holders for length of material used
 				LargestX = 0
-				SmallestX = 156
+				SmallestX = int(container.maxLength) - 1
 
 				# clears the solution list each evaluation
 				container.solution_locations.clear()
@@ -99,36 +76,29 @@ def main():
 
 						# Rotate the shape if needed
 						if rotation != 0:
-							shape = rotate.rotate_shape(rotation, shape)
+							shape = operations.rotate_shape(rotation, shape)
 
 						# Check whether the shape fits on the material in the current position
-						valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
+						valid = operations.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
 							
 						# if the move was valid and was placed
 						if valid:
-							shapeManipulation.placeShape(container.materialSheet, x_cord, y_cord, shape)
+							operations.placeShape(container.materialSheet, container.maxLength, x_cord, y_cord, shape, SmallestX, LargestX)
 							# store the location in a tuple if it worked
 							placementLocation = (x_cord, y_cord, rotation)
 							# append it to the list
 							container.solution_locations.append(placementLocation)
 
-				# obtains the smallest and largest position in the material array
-				for i in range(len(container.materialSheet)):
-					if 1 in container.materialSheet[i]:
-						if i < SmallestX:
-							SmallestX = i
-						elif i > LargestX:
-							LargestX = i
-
 				# Determines the Length of the material used by this iteration
 				usedLength = ((LargestX - SmallestX) + 1)
-				current_fitness = fitnessCalc(container.maxLength, usedLength)
+				current_fitness = operations.fitnessCalc(container.maxLength, usedLength)
 
 				# Determines if the current fitness is higher than the highest fitness this run
 				# if it is, writes it to the log file
 				if highest_fitness < current_fitness:
 					highest_fitness = current_fitness
 					result_log.write(str(fitness) + "	" + str(current_fitness) + "\n")
+					print(str(fitness) + "	" + str(current_fitness) + "\n")
 
 				# If the current solution is the best, replace the current solution with the new solution
 				if container.solution_fitness < current_fitness:
@@ -136,7 +106,7 @@ def main():
 					container.solution_fitness = current_fitness
 
 					# Write the shape configuration to the solution file
-					solution_file = open(container.prob_solution_file, 'w')
+					solution_file = open(container.prob_solution_file_random, 'w')
 
 					solution_file.write("Solution File \n\n")
 					for i in range(len(container.solution_locations)):
@@ -149,79 +119,12 @@ def main():
 		solution_file.close()
 
 	# User wants the EA run
-	elif sys.argv[3] == "EA":
-		# setting up variables using config file
-		for rules in config:
-
-			# Gets rid of the Random Search Configurations
-			if rules == "::::Random Search::::":
-				del config[0:8]
-
-			# split the rules into words
-			info = rules.split(" ")
-
-			if info[0] == "mu:":
-				container.populationSize = info[1]
-			elif info[0] == "lambda:":
-				container.offspringSize = info[1]
-			elif info[0] == "runs:":
-				container.numRuns = info[1]
-			elif info[0] == "seed:" and sys.argv[4] == "newSeed":
-				container.seed = eval(info[1])
-			elif info[0] == "seed:" and sys.argv[4] == "lastSeed":
-				obtain_seed = open(container.prob_log_file).read().splitlines(3)
-				for lines in obtain_seed:
-					line = lines.split(" ")
-					if line[0] == "Random":
-						container.seed = line[3]
-						break
-			elif info[0] == "mutation_rate:":
-				container.mutationRate = info[1]
-			elif info[0] == "fitness_evaluations:":
-				container.evaluations = info[1]
-			elif info[0] == "prob_log:":
-				container.prob_log_file = info[1]
-			elif info[0] == "number_of_evals_till_termination:":
-				container.numEvalsTerminate = info[1]
-			elif info[0] == "tournament_size_for_parent_selection:":
-				container.kParent = info[1]
-			elif info[0] == "tournament_size_for_survival_selection:":
-				container.kOffspring = info[1]
-			elif info[0] == "n_for_termination_convergence_criterion:":
-				container.n = info[1]
-			elif info[0] == "prob_solution:":
-				container.prob_solution_file = info[1]
-			elif info[0] == "Initialization:":
-				if info[1] == "Uniform_Random:" and info[2] == '1':
-					# sets flag for uniform random
-					container.uniformRandom = 1
-			elif info[0] == "Parent_Selection:":
-				if info[1] == "Fitness_Proportional_Selection:" and info[2] == '1,':
-					# sets flag for fitness selection
-					container.fitnessSelection = 1
-				elif info[3] == "k-Tournament_Selection_with_replacement:" and info[4] == '1':
-					# sets flag for parent tournament
-					container.parentTournament = 1
-			elif info[0] == "Survival_Selection:":
-				if info[1] == "Truncation:" and info[2] == '1,':
-					container.truncation = 1
-				elif info[3] == "k-Tournament_Selection_without_replacement:" and info[4] == '1':
-					container.offspringTournament = 1
-			elif info[0] == "Termination:":
-				if info[1] == "Number_of_evals:" and info[2] == '1,':
-					container.numEvals = 1
-				elif info[3] == "no_change_in_average_population_fitness_for_n_generations:" and info[4] == '1,':
-					# sets flag for parent tournament
-					container.avgPopFitness = 1
-				elif info[5] == "no_change_in_best_fitness_in_population_for_n_generations:" and info[6] == '1':
-					# sets flag for parent tournament
-					container.bestPopFitness = 1
-
+	elif config[1] == "EA = 1":
 		# Seeds the random function using a saved value that is put into the log file
 		random.seed(container.seed)
 
 		# opening the log file 
-		result_log = open(container.prob_log_file, 'w')
+		result_log = open(container.prob_log_file_EA, 'w')
 		# formatting the result log with Result Log at the top and parameters used
 		result_log.write("Result Log \n")
 		result_log.write("Problem Instance Path = ../%s \n" % sys.argv[2])
@@ -230,7 +133,7 @@ def main():
 		result_log.write("Parent_Selection = {'Fitness_Proportional_Selection': %s,'k-Tournament_Selection_with_replacement': %s}\n" % (container.fitnessSelection, container.parentTournament))
 		result_log.write("Survival_Selection = {'Truncation': %s, 'k-Tournament_Selection_without_replacement': %s}\n" % (container.truncation, container.offspringTournament))
 		result_log.write("Termination = {'Number_of_evals': %s, 'no_change_in_average_population_fitness_for_n_generations': %s, 'no_change_in_best_fitness_in_population_for_n_generations': %s}\n" % (container.numEvals, container.avgPopFitness, container.bestPopFitness))
-		result_log.write("Parameters used = {'fitness evaluations': %s, 'number of runs': %s, 'problem solution location': '%s', 'mutation_rate': %s, 'mu': %s, 'lambda': %s}\n\n" % (container.evaluations, container.numRuns, container.prob_solution_file, container.mutationRate, container.populationSize, container.offspringSize))
+		result_log.write("Parameters used = {'fitness evaluations': %s, 'number of runs': %s, 'problem solution location': '%s', 'mutation_rate': %s, 'mu': %s, 'lambda': %s}\n\n" % (container.evaluations, container.numRuns, container.prob_solution_file_EA, container.mutationRate, container.populationSize, container.offspringSize))
 
 		# runs through the program as many times as the config files says to
 		for run in range(1, int(container.numRuns) + 1):
@@ -247,13 +150,13 @@ def main():
 
 			# Titles each section with Run i, where i is the run number (1-30)
 			result_log.write("Run " + str(run) + "\n")
-
+			print("Run " + str(run) + "\n")
 			
 			'''------INITIALIZATION------'''
 			for person in range(0, int(container.populationSize)):
 				# holders for length of material used
 				LargestX = 0
-				SmallestX = 156
+				SmallestX = int(container.maxLength) - 1
 
 				# clears the solution for each evaluation
 				container.solution_locations.clear()
@@ -273,14 +176,14 @@ def main():
 
 						# Rotate the shape if needed
 						if rotation != 0:
-							shape = rotate.rotate_shape(rotation, shape)
+							shape = operations.rotate_shape(rotation, shape)
 
 						# Check whether the shape fits on the material in the current position
-						valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
+						valid = operations.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
 							
 						# if the move was valid and was placed
 						if valid:
-							shapeManipulation.placeShape(container.materialSheet, x_cord, y_cord, shape)
+							operations.placeShape(container.materialSheet, container.maxLength, x_cord, y_cord, shape, SmallestX, LargestX)
 							# store the location in a tuple if it worked
 							placementLocation = (x_cord, y_cord, rotation)
 							# append it to the list
@@ -289,17 +192,9 @@ def main():
 				# Make a list containing all people in a population
 				container.population_locations.append(container.solution_locations)
 
-				# obtains the smallest and largest position in the material array
-				for i in range(len(container.materialSheet)):
-					if 1 in container.materialSheet[i]:
-						if i < SmallestX:
-							SmallestX = i
-						elif i > LargestX:
-							LargestX = i
-
 				# Determines the Length of the material used by this iteration
 				usedLength = ((LargestX - SmallestX) + 1)
-				current_fitness = fitnessCalc(container.maxLength, usedLength)
+				current_fitness = operations.fitnessCalc(container.maxLength, usedLength)
 
 				# Make a list of fitness values associated with each person in the population
 				container.population_fitness_values.append(current_fitness)
@@ -318,7 +213,8 @@ def main():
 			average_fitness = average_fitness / int(container.populationSize)
 
 
-			result_log.write(container.populationSize + "	 " + str(round(average_fitness)) + "	" + str(best_fitness) + "\n")
+			result_log.write(container.populationSize + "     " + str("%.4f" % float(container.mutationRate)) + "     " + str(round(average_fitness)) + "     " + str(best_fitness) + "\n")
+			print(container.populationSize + "     " + str("%.4f" % float(container.mutationRate)) + "     " + str(round(average_fitness)) + "     " + str(best_fitness) + "\n")
 
 			'''------START OF THE EA------'''
 			for fitness in range(1, int(container.evaluations) + 1):
@@ -329,8 +225,11 @@ def main():
 				container.offspring_fitness.clear()
 
 				'''------Parent Selection------'''
+				# if the user wants uniform random selection
+				if container.uniformRandomParent == 1:
+					container.parents = deepcopy(selections.uniformRandomParent(container.population_locations, container.population_fitness_values, container.kParent))
 				# if the user wants fitness proportional selection
-				if container.fitnessSelection == 1:
+				elif container.fitnessSelection == 1:
 					container.parents = deepcopy(selections.fitnessSelection(container.population_locations, container.population_fitness_values, container.kParent))
 				# if the user wants tournament selection
 				elif container.parentTournament == 1:
@@ -344,8 +243,13 @@ def main():
 				for index in range(0, int(container.offspringSize)):
 					# holders for length of material used
 					LargestX = 0
-					SmallestX = 156
+					SmallestX = int(container.maxLength) - 1
 
+					# Used to self adapt the mutation operators if it isnt being used often enough
+					nonMutation_count = 0
+					Mutation_count = 0
+
+					# Stores the newly created offspring
 					mutated_offspring = []
 
 					# the material sheet being used to cut out shapes
@@ -365,52 +269,42 @@ def main():
 
 					# for every shape in the file, choose a position
 					for index in range(0, len(test_offspring)):
-						recombination_valid = False
-						mutation_valid = False
-
-						x_cord, y_cord, rotation = test_offspring[index]
-
-						if rotation != 0:
-							shape = rotate.rotate_shape(rotation, container.shapes[index])
-						elif rotation == 0:
-							shape = container.shapes[index]
-
-						recombination_valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
-
-						# Keep obtaining a new position until it fits on the material
-						while not recombination_valid:
-							# generate random position and rotation
-							x_cord = random.randrange(0, int(container.maxLength))
-							y_cord = random.randrange(0, int(container.maxWidth))
-							rotation = random.randrange(0,4)
-
-							# Rotate the shape if needed
-							if rotation != 0:
-								shape = rotate.rotate_shape(rotation, container.shapes[index])
-							elif rotation == 0:
-								shape = container.shapes[index]
-
-							# Check whether the shape fits on the material in the current position
-							recombination_valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
-								
+						# obtain a random chance for mutation
 						mutate = random.random()
 
+						# ------RECOMBINATION------
+						direction = "up"
+						if mutate > float(container.mutationRate):
+							# Does the recombination, found in Recombination File
+							x_cord, y_cord, rotation, shape = operations.recombination(container.materialSheet, container.maxLength, container.maxWidth, container.shapes, test_offspring, index)
+
+							# This count will determine when the mutation is too low
+							nonMutation_count += 1
+
+							# This determines whether the mutation rate is in need of an increase or not
+							if container.adaptiveMutation:
+								# Increase the mutation rate by .1%
+								container.mutationRate, nonMutation_count = operations.mutationSelfAdapt(len(container.shapes), float(container.mutationRate), nonMutation_count, direction)
+
+						else:  # no penalty for recombination if mutation is occuring
+							x_cord, y_cord, rotation, shape = operations.recombination(container.materialSheet, container.maxLength, container.maxWidth, container.shapes, test_offspring, index)
+						
+						# ----MUTATION-----
+						direction = "down"
+						# If necessary mutate
 						if mutate <= float(container.mutationRate):
-							# Keep obtaining a new position until it fits on the material
-							while not mutation_valid:
-								# generate random position and rotation
-								x_cord = random.randrange(0, int(container.maxLength))
-								y_cord = random.randrange(0, int(container.maxWidth))
-								rotation = random.randrange(0,4)
+							x_cord, y_cord, rotation, shape = operations.mutation(container.materialSheet, container.maxLength, container.maxWidth, shape)
 
-								if rotation != 0:
-									shape = rotate.rotate_shape(rotation, container.shapes[index])
-								elif rotation == 0:
-									shape = container.shapes[index]
+							# This count will determine if there is too much mutation happening
+							Mutation_count += 1
 
-								mutation_valid = shapeManipulation.validPlacement(container.materialSheet, container.maxLength, container.maxWidth, x_cord, y_cord, shape)
+							# This determines whether it is time to increase the mutation rate or not
+							if container.adaptiveMutation:
+								# Decrease the mutation rate by .1%
+								container.mutationRate, Mutation_count = operations.mutationSelfAdapt(len(container.shapes), float(container.mutationRate), Mutation_count, direction)
 
-						shapeManipulation.placeShape(container.materialSheet, x_cord, y_cord, shape)
+						# Place the newly created shape if it is valid
+						SmallestX, LargestX = operations.placeShape(container.materialSheet, container.maxLength, x_cord, y_cord, shape, SmallestX, LargestX)
 
 						# store the location in a tuple if it worked
 						placementLocation = (x_cord, y_cord, rotation)
@@ -420,17 +314,9 @@ def main():
 
 					container.mutated_offspring.append(mutated_offspring)
 
-					# obtains the smallest and largest position in the material array
-					for i in range(len(container.materialSheet)):
-						if 1 in container.materialSheet[i]:
-							if i < SmallestX:
-								SmallestX = i
-							elif i > LargestX:
-								LargestX = i
-
 					# Determines the Length of the material used by this iteration
 					usedLength = ((LargestX - SmallestX) + 1)
-					current_fitness = fitnessCalc(container.maxLength, usedLength)
+					current_fitness = operations.fitnessCalc(container.maxLength, usedLength)
 
 					# If the current solution is the best, replace the current solution with the new solution
 					if container.solution_fitness < current_fitness:
@@ -438,7 +324,7 @@ def main():
 						container.solution_fitness = current_fitness
 
 						# Write the shape configuration to the solution file
-						solution_file = open(container.prob_solution_file, 'w')
+						solution_file = open(container.prob_solution_file_EA, 'w')
 
 						solution_file.write("Solution File \n\n")
 						for i in range(0, len(mutated_offspring)):
@@ -446,15 +332,57 @@ def main():
 
 					# Make a list of fitness values associated with each person in the population
 					container.mutated_offspring_fitness.append(current_fitness)
-		
+
+
+					'''------Termination------'''
+					if container.numEvals == 1 and int(container.numEvalsTerminate) == index:
+						break
+					elif container.avgPopFitness == 1:
+						count = 0
+						end = False
+
+						for num in container.mutated_offspring_fitness:
+							if count >= int(container.n) - 1:
+								end = True
+							elif int(num) == int(round(average_run_fitness)):
+								count += 1
+						if end:
+							break
+					elif container.mutated_offspring_fitness == 1:
+						count = 0
+						end = False
+
+						for num in container.best_fitness_holder:
+							if count >= int(container.n) - 1:
+								end = True
+							elif num == best_run_fitness:
+								count += 1					
+						if end:
+							break
+
+
+				'''------Survival Strategy Implementation and Survival Selection------'''
+				if container.survivalStrategyPlus:
+					container.mutated_offspring = container.mutated_offspring + container.population_locations
+					container.mutated_offspring_fitness = container.mutated_offspring_fitness + container.population_fitness_values
+				elif container.survivalStrategyComma:
+					# Parents are automaticaly killed off after this, no implementation for this particular part needed
+					pass
+
 
 				'''------Survival Selection------'''
-				if container.truncation == 1:
+				if container.uniformRandomSurvival == 1:
+					container.offspring, container.offspring_fitness = deepcopy(selections.uniformRandomSurvival(container.mutated_offspring, container.mutated_offspring_fitness, container.kOffspring))
+				elif container.truncation == 1:
 					container.offspring = deepcopy(container.mutated_offspring[0: int(container.kOffspring)])
 					container.offspring_fitness = deepcopy(container.mutated_offspring_fitness[0: int(container.kOffspring)])
 				elif container.offspringTournament == 1:				
 					container.offspring, container.offspring_fitness = deepcopy(selections.offspringTournament(container.mutated_offspring, container.mutated_offspring_fitness, container.kOffspring))
 
+
+				# Stores the new population to be used in the following generations	(Uses the survival strategy through survival selection)
+				container.population_locations = deepcopy(container.offspring)
+				container.population_fitness_values = deepcopy(container.offspring_fitness)
 
 				'''------Result Log Formatting Evaluations------'''
 				average_fitness = 0
@@ -474,48 +402,16 @@ def main():
 					average_run_fitness += i
 				average_run_fitness = average_run_fitness / len(container.average_fitness_holder)
 
-				result_log.write(str(fitness) + "	" + str(round(average_run_fitness)) + "	" + str(best_run_fitness) + "\n")
-
-
-				'''------Termination------'''
-				if container.numEvals == 1 and int(container.numEvalsTerminate) == fitness:
-					break
-				elif container.avgPopFitness == 1:
-					count = 0
-					end = False
-
-					for num in container.average_fitness_holder:
-						if count >= int(container.n) - 1:
-							end = True
-						elif int(num) == int(round(average_run_fitness)):
-							count += 1
-					if end:
-						break
-				elif container.bestPopFitness == 1:
-					count = 0
-					end = False
-
-					for num in container.best_fitness_holder:
-						if count >= int(container.n) - 1:
-							end = True
-						elif num == best_run_fitness:
-							count += 1					
-					if end:
-						break
-
-
+				result_log.write(str(fitness) + "     " + str("%.4f" % container.mutationRate) + "     " + str("%.2f" % average_run_fitness) + "     " + str(best_run_fitness) + "\n")
+				
+				if fitness % 20 == 0:
+					print(str(fitness) + "     " + str("%.4f" % container.mutationRate) + "     " + str("%.2f" % average_run_fitness) + "     " + str(best_run_fitness))
 			# formatting the result log with a space after each run block
 			result_log.write("\n")
 
 		result_log.close()
 
 
-def fitnessCalc(maxLength, usedLength):
-	# determine the fitness of the evaluation
-	fitness_calculation = maxLength - usedLength
-
-	return fitness_calculation
-
-
 if __name__ == '__main__':
 	main()
+

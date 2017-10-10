@@ -1,6 +1,15 @@
 from copy import deepcopy
 import random
 
+def uniformRandomParent(locations, fitness_values, kParents):
+	parents = []
+
+	for i in range(int(kParents)):
+		parent = random.randrange(0, len(locations))
+		parents.append(locations[parent])
+
+	return parents
+
 
 # returns a list of parents using fitness proportionate selection portion of the EA
 def fitnessSelection(locations, fitness_values, kParent):
@@ -17,7 +26,7 @@ def fitnessSelection(locations, fitness_values, kParent):
 		fitness_prob.append(num/total_fitness)
 
 	for i in range(0, int(kParent)):
-		parents.append(random_pick(locations, fitness_prob))
+		parents.append(random_probability_pick(locations, fitness_prob))
 
 	return parents
 
@@ -45,9 +54,8 @@ def parentTournament(locations, fitness_values, kParent):
 		tournament_pool, tournament_fitness_pool = deepcopy(createParentTourney(locations, fitness_values, kParent))
 		
 		for index in range(0, len(tournament_fitness_pool)):
-			if tournament_fitness_pool[index] > tournament_fitness_pool[highest_index]:
+			if tournament_fitness_pool[index] > tournament_fitness_pool[highest_index] and index < len(locations):
 				highest_index = index
-	
 
 		parents.append(locations[highest_index])
 
@@ -66,6 +74,18 @@ def createParentTourney(locations, fitness_values, kParent):
 	return Tourney_participants, Tourney_participants_fitness_values
 
 
+def uniformRandomSurvival(locations, fitness_values, kOffspring):
+	offspring = []
+	offspring_fitness = []
+
+	for i in range(int(kOffspring)):
+		randOffspring = random.randrange(0, len(locations))
+		offspring.append(locations[randOffspring])
+		offspring_fitness.append(fitness_values[randOffspring])
+
+	return offspring, offspring_fitness
+
+
 def offspringTournament(locations, fitness_values, kOffspring):
 	offspring = []
 	offspring_fitness = []
@@ -76,13 +96,13 @@ def offspringTournament(locations, fitness_values, kOffspring):
 		tournament_pool, tournament_fitness_pool = deepcopy(createParentTourney(locations, fitness_values, kOffspring))
 
 		for index in range(0, len(tournament_fitness_pool)):
-			if tournament_fitness_pool[index] > tournament_fitness_pool[highest_index]:
+			if tournament_fitness_pool[index] > tournament_fitness_pool[highest_index] and index < len(locations):
 				highest_index = index
 
 		offspring.append(locations[highest_index])
 		del locations[highest_index]
 		offspring_fitness.append(fitness_values[highest_index])
-		del locations[highest_index]
+		del fitness_values[highest_index]
 
 	return offspring, offspring_fitness
 
@@ -97,6 +117,7 @@ def createOffspringTourney(locations, fitness_values, kOffspring):
 		Tourney_participants_fitness_values.append(fitness_values[rand_location])
 
 	return Tourney_participants, Tourney_participants_fitness_values
+
 
 
 

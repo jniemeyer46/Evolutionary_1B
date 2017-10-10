@@ -1,31 +1,32 @@
-::::Random Search::::
+Random = 0
+EA = 1
+newSeed = 1
 
+mu: 20
+lambda: 10
+penalty: 1
 runs: 30
-seed: time.time()
-fitness_evaluations: 1000
-prob_log: logs/prob3_random_log.txt
-prob_solution: solutions/prob3_random_solution.txt
-
-
-::::EA::::
-
-mu: 150
-lambda: 75
-runs: 30
-mutation_rate: 0.1
+mutation_rate: 0.01
 fitness_evaluations: 10000
-prob_log: logs/prob3_EA_log.txt
-number_of_evals_till_termination: 100
+prob_log_random: logs/prob3_random_log.txt
+prob_log_EA: logs/prob3_EA_log.txt
+number_of_evals_till_termination: 5
 tournament_size_for_parent_selection: 10
 tournament_size_for_survival_selection: 10
-n_for_termination_convergence_criterion: 50
-prob_solution: solutions/prob3_EA_solution.txt
+n_for_termination_convergence_criterion: 5
+prob_solution_random: solutions/prob3_random_solution.txt
+prob_solution_EA: solutions/prob3_EA_solution.txt
 seed: time.time()
+
+selfAdaptive: adaptMutation: 1
 
 Initialization: Uniform_Random: 1
 
-Parent_Selection: Fitness_Proportional_Selection: 0, k-Tournament_Selection_with_replacement: 1
+Parent_Selection: Uniform_random_parent: 1, Fitness_Proportional_Selection: 0, k-Tournament_Selection_with_replacement: 0
 
-Survival_Selection: Truncation: 0, k-Tournament_Selection_without_replacement: 1
+Survival_Strategy: plus: 0, comma: 1
+
+Survival_Selection: Uniform_random_survival: 1, Truncation: 0, k-Tournament_Selection_without_replacement: 0
 
 Termination: Number_of_evals: 0, no_change_in_average_population_fitness_for_n_generations: 0, no_change_in_best_fitness_in_population_for_n_generations: 1
+
