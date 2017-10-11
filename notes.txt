@@ -1,2 +1,1 @@
-μ = initial population size
-λ = recombination pool size
+MAKE IT FASTER

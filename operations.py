@@ -256,19 +256,20 @@ def mutation(sheet, maxL, maxW, shape):
 	return x_cord, y_cord, rotation, shape
 
 
-def mutationSelfAdapt(length, mutation, count, direction):
-	mutate = mutation
-	currentCount = count
-	if length == count:
-		if direction == "up":
-			mutate = mutation + 0.001
-			currentCount = 0
+def mutationSelfAdapt(length, mutation, up_count, down_count, string):
+	
+	if length == up_count:
+		mutation = mutation + 0.001
+		up_count = 0
 
-			return mutate, currentCount
-		elif direction == "down":
-			mutate = mutation - 0.001
-			currentCount = 0
+		return mutation, up_count
+	elif (length / 2) == down_count:
+		mutation = mutation - 0.001
+		down_count = 0
 
-			return mutate, currentCount
+		return mutation, down_count
 
-	return mutate, currentCount
+	if string == "recombination":
+		return mutation, up_count
+	elif string == "mutate":
+		return mutation, down_count

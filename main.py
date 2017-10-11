@@ -18,10 +18,10 @@ def main():
 	container.shapes = open(sys.argv[2]).read().splitlines()
 
 	# Variables that will be used to set the 2d array of material
-	container.maxWidth = container.shapes[0].split(" ")[0]
-	container.maxLength = operations.getLength(container.shapes)
+	container.maxWidth = int(container.shapes[0].split(" ")[0])
+	container.maxLength = int(operations.getLength(container.shapes))
 	#number of shapes in the problem file
-	container.numShapes = container.shapes[0].split(" ")[1]
+	container.numShapes = int(container.shapes[0].split(" ")[1])
 
 	# delete the width and number of shapes from the shape list
 	del container.shapes[0]
@@ -43,7 +43,7 @@ def main():
 						% (container.evaluations, container.numRuns, container.prob_solution_file_random))
 
 		# runs through the program as many times as the config files says to
-		for run in range(1, int(container.numRuns) + 1):
+		for run in range(1, container.numRuns + 1):
 			# highest fitness calculation thus far this run
 			highest_fitness = 0
 
@@ -52,16 +52,16 @@ def main():
 			print("Run " + str(run) + "\n")
 
 			# run through the given amount of times given by fitness evaluation
-			for fitness in range(1, int(container.evaluations)+1):
+			for fitness in range(1, container.evaluations + 1):
 				# holders for length of material used
 				LargestX = 0
-				SmallestX = int(container.maxLength) - 1
+				SmallestX = container.maxLength - 1
 
 				# clears the solution list each evaluation
 				container.solution_locations.clear()
 
 				# the material sheet being used to cut out shapes
-				container.materialSheet = [[0 for x in range(0, int(container.maxWidth))] for y in range(0, int(container.maxLength))]
+				container.materialSheet = [[0 for x in range(0, container.maxWidth)] for y in range(0, container.maxLength)]
 
 				# for every shape in the file, choose a position
 				for shape in container.shapes:
@@ -70,8 +70,8 @@ def main():
 					# Keep obtaining a new position until it fits on the material
 					while not valid:
 						# generate random position and rotation
-						x_cord = random.randrange(0, int(container.maxLength))
-						y_cord = random.randrange(0, int(container.maxWidth))
+						x_cord = random.randrange(0, container.maxLength)
+						y_cord = random.randrange(0, container.maxWidth)
 						rotation = random.randrange(0,4)
 
 						# Rotate the shape if needed
@@ -83,7 +83,7 @@ def main():
 							
 						# if the move was valid and was placed
 						if valid:
-							operations.placeShape(container.materialSheet, container.maxLength, x_cord, y_cord, shape, SmallestX, LargestX)
+							SmallestX, LargestX = operations.placeShape(container.materialSheet, container.maxLength, x_cord, y_cord, shape, SmallestX, LargestX)
 							# store the location in a tuple if it worked
 							placementLocation = (x_cord, y_cord, rotation)
 							# append it to the list
@@ -97,11 +97,11 @@ def main():
 				# if it is, writes it to the log file
 				if highest_fitness < current_fitness:
 					highest_fitness = current_fitness
-					result_log.write(str(fitness) + "	" + str(current_fitness) + "\n")
-					print(str(fitness) + "	" + str(current_fitness) + "\n")
+					result_log.write(str(fitness) + "	" + str(highest_fitness) + "\n")
+					print(str(fitness) + "	" + str(highest_fitness))
 
 				# If the current solution is the best, replace the current solution with the new solution
-				if container.solution_fitness < current_fitness:
+				if container.solution_fitness < highest_fitness:
 					# set the new solution fitness value
 					container.solution_fitness = current_fitness
 
@@ -136,7 +136,7 @@ def main():
 		result_log.write("Parameters used = {'fitness evaluations': %s, 'number of runs': %s, 'problem solution location': '%s', 'mutation_rate': %s, 'mu': %s, 'lambda': %s}\n\n" % (container.evaluations, container.numRuns, container.prob_solution_file_EA, container.mutationRate, container.populationSize, container.offspringSize))
 
 		# runs through the program as many times as the config files says to
-		for run in range(1, int(container.numRuns) + 1):
+		for run in range(1, container.numRuns + 1):
 			# highest fitness calculation thus far this run
 			highest_fitness = 0
 			best_run_fitness = 0
@@ -153,7 +153,7 @@ def main():
 			print("Run " + str(run) + "\n")
 			
 			'''------INITIALIZATION------'''
-			for person in range(0, int(container.populationSize)):
+			for person in range(0, container.populationSize):
 				# holders for length of material used
 				LargestX = 0
 				SmallestX = int(container.maxLength) - 1
@@ -183,7 +183,7 @@ def main():
 							
 						# if the move was valid and was placed
 						if valid:
-							operations.placeShape(container.materialSheet, container.maxLength, x_cord, y_cord, shape, SmallestX, LargestX)
+							SmallestX, LargestX = operations.placeShape(container.materialSheet, container.maxLength, x_cord, y_cord, shape, SmallestX, LargestX)
 							# store the location in a tuple if it worked
 							placementLocation = (x_cord, y_cord, rotation)
 							# append it to the list
@@ -213,11 +213,12 @@ def main():
 			average_fitness = average_fitness / int(container.populationSize)
 
 
-			result_log.write(container.populationSize + "     " + str("%.4f" % float(container.mutationRate)) + "     " + str(round(average_fitness)) + "     " + str(best_fitness) + "\n")
-			print(container.populationSize + "     " + str("%.4f" % float(container.mutationRate)) + "     " + str(round(average_fitness)) + "     " + str(best_fitness) + "\n")
+			# Print and write the results to the file/screen
+			result_log.write(str(container.populationSize) + "     " + str("%.4f" % float(container.mutationRate)) + "     " + str(round(average_fitness)) + "     " + str(best_fitness) + "\n")
+			print(str(container.populationSize) + "     " + str("%.4f" % float(container.mutationRate)) + "     " + str(round(average_fitness)) + "     " + str(best_fitness) + "\n")
 
 			'''------START OF THE EA------'''
-			for fitness in range(1, int(container.evaluations) + 1):
+			for fitness in range(1, container.evaluations + 1):
 				# clear the population for the next run
 				container.mutated_offspring.clear()
 				container.mutated_offspring_fitness.clear()
@@ -227,13 +228,13 @@ def main():
 				'''------Parent Selection------'''
 				# if the user wants uniform random selection
 				if container.uniformRandomParent == 1:
-					container.parents = deepcopy(selections.uniformRandomParent(container.population_locations, container.population_fitness_values, container.kParent))
+					container.parents = selections.uniformRandomParent(container.population_locations, container.population_fitness_values, int(container.kParent))
 				# if the user wants fitness proportional selection
 				elif container.fitnessSelection == 1:
-					container.parents = deepcopy(selections.fitnessSelection(container.population_locations, container.population_fitness_values, container.kParent))
+					container.parents = selections.fitnessSelection(container.population_locations, container.population_fitness_values, int(container.kParent))
 				# if the user wants tournament selection
 				elif container.parentTournament == 1:
-					container.parents = deepcopy(selections.parentTournament(container.population_locations, container.population_fitness_values, container.kParent))
+					container.parents = selections.parentTournament(container.population_locations, container.population_fitness_values, int(container.kParent))
 				# if the user didnt set their parent selector
 				else:
 					print("You did not select a parent selection method in the configuration file")
@@ -273,7 +274,6 @@ def main():
 						mutate = random.random()
 
 						# ------RECOMBINATION------
-						direction = "up"
 						if mutate > float(container.mutationRate):
 							# Does the recombination, found in Recombination File
 							x_cord, y_cord, rotation, shape = operations.recombination(container.materialSheet, container.maxLength, container.maxWidth, container.shapes, test_offspring, index)
@@ -284,13 +284,12 @@ def main():
 							# This determines whether the mutation rate is in need of an increase or not
 							if container.adaptiveMutation:
 								# Increase the mutation rate by .1%
-								container.mutationRate, nonMutation_count = operations.mutationSelfAdapt(len(container.shapes), float(container.mutationRate), nonMutation_count, direction)
+								container.mutationRate, nonMutation_count = operations.mutationSelfAdapt(len(container.shapes), container.mutationRate, nonMutation_count, Mutation_count, "recombination")
 
 						else:  # no penalty for recombination if mutation is occuring
 							x_cord, y_cord, rotation, shape = operations.recombination(container.materialSheet, container.maxLength, container.maxWidth, container.shapes, test_offspring, index)
 						
 						# ----MUTATION-----
-						direction = "down"
 						# If necessary mutate
 						if mutate <= float(container.mutationRate):
 							x_cord, y_cord, rotation, shape = operations.mutation(container.materialSheet, container.maxLength, container.maxWidth, shape)
@@ -301,7 +300,7 @@ def main():
 							# This determines whether it is time to increase the mutation rate or not
 							if container.adaptiveMutation:
 								# Decrease the mutation rate by .1%
-								container.mutationRate, Mutation_count = operations.mutationSelfAdapt(len(container.shapes), float(container.mutationRate), Mutation_count, direction)
+								container.mutationRate, Mutation_count = operations.mutationSelfAdapt(len(container.shapes), container.mutationRate, nonMutation_count, Mutation_count, "mutate")
 
 						# Place the newly created shape if it is valid
 						SmallestX, LargestX = operations.placeShape(container.materialSheet, container.maxLength, x_cord, y_cord, shape, SmallestX, LargestX)
@@ -372,7 +371,7 @@ def main():
 
 				'''------Survival Selection------'''
 				if container.uniformRandomSurvival == 1:
-					container.offspring, container.offspring_fitness = deepcopy(selections.uniformRandomSurvival(container.mutated_offspring, container.mutated_offspring_fitness, container.kOffspring))
+					container.offspring, container.offspring_fitness = deepcopy(selections.uniformRandomSurvival(container.mutated_offspring, container.mutated_offspring_fitness, int(container.kOffspring)))
 				elif container.truncation == 1:
 					container.offspring = deepcopy(container.mutated_offspring[0: int(container.kOffspring)])
 					container.offspring_fitness = deepcopy(container.mutated_offspring_fitness[0: int(container.kOffspring)])
@@ -402,8 +401,9 @@ def main():
 					average_run_fitness += i
 				average_run_fitness = average_run_fitness / len(container.average_fitness_holder)
 
+
+				# Printing and writing the results to the log/screen
 				result_log.write(str(fitness) + "     " + str("%.4f" % container.mutationRate) + "     " + str("%.2f" % average_run_fitness) + "     " + str(best_run_fitness) + "\n")
-				
 				if fitness % 20 == 0:
 					print(str(fitness) + "     " + str("%.4f" % container.mutationRate) + "     " + str("%.2f" % average_run_fitness) + "     " + str(best_run_fitness))
 			# formatting the result log with a space after each run block

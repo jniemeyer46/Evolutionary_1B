@@ -8,11 +8,11 @@ def setup(container, config):
 		info = rules.split(" ")
 
 		if info[0] == "mu:":
-			container.populationSize = info[1]
+			container.populationSize = int(info[1])
 		elif info[0] == "lambda:":
-			container.offspringSize = info[1]
+			container.offspringSize = int(info[1])
 		elif info[0] == "runs:":
-			container.numRuns = info[1]
+			container.numRuns = int(info[1])
 		elif info[0] == "newSeed":
 			if info[2] == '1':
 				for rules in config:
@@ -31,21 +31,21 @@ def setup(container, config):
 			if info[1] == "adaptMutation:" and info[2] == '1':
 				container.adaptiveMutation = 1
 		elif info[0] == "mutation_rate:":
-			container.mutationRate = info[1]
+			container.mutationRate = float(info[1])
 		elif info[0] == "fitness_evaluations:":
-			container.evaluations = info[1]
+			container.evaluations = int(info[1])
 		elif info[0] == "prob_log_random:":
 			container.prob_log_file_random = info[1]
 		elif info[0] == "prob_log_EA:":
 			container.prob_log_file_EA = info[1]
 		elif info[0] == "number_of_evals_till_termination:":
-			container.numEvalsTerminate = info[1]
+			container.numEvalsTerminate = int(info[1])
 		elif info[0] == "tournament_size_for_parent_selection:":
-			container.kParent = info[1]
+			container.kParent = int(info[1])
 		elif info[0] == "tournament_size_for_survival_selection:":
-			container.kOffspring = info[1]
+			container.kOffspring = int(info[1])
 		elif info[0] == "n_for_termination_convergence_criterion:":
-			container.n = info[1]
+			container.n = int(info[1])
 		elif info[0] == "prob_solution_random:":
 			container.prob_solution_file_random = info[1]
 		elif info[0] == "prob_solution_EA:":

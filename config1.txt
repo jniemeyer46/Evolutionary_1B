@@ -4,7 +4,6 @@ newSeed = 1
 
 mu: 20
 lambda: 10
-penalty: 1
 runs: 30
 mutation_rate: 0.01
 fitness_evaluations: 10000
